@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园跑腿系统</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white">
+        <div class="container">
+            <a class="navbar-brand" href="#"><i class="fas fa-running"></i> 校园跑腿</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="loadTasks()"><i class="fas fa-list"></i> 任务列表</a>
+                    </li>
+                    <li class="nav-item d-none" id="myTasksNav">
+                        <a class="nav-link" href="#" onclick="showMyTasks()"><i class="fas fa-tasks"></i> 我的任务</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showStatistics()"><i class="fas fa-chart-bar"></i> 数据统计</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showHelp()"><i class="fas fa-question-circle"></i> 帮助中心</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item" id="loginNav">
+                        <button class="btn btn-outline-primary me-2" onclick="showLoginModal()">登录</button>
+                        <button class="btn btn-primary" onclick="showRegisterModal()">注册</button>
+                    </li>
+                    <li class="nav-item d-none" id="userNav">
+                        <div class="dropdown me-2">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                                <i class="fas fa-user"></i> <span id="userInfo"></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" onclick="showProfile()"><i class="fas fa-user-circle"></i> 个人中心</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" onclick="showPublishModal()"><i class="fas fa-plus-circle"></i> 发布任务</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="showMyTasks()"><i class="fas fa-tasks"></i> 我的任务</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> 退出登录</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="flex-grow-1">
+        <div class="container mt-4">
+            <!-- 搜索栏 -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="keyword" placeholder="搜索任务...">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="category">
+                                <option value="">全部分类</option>
+                                <option value="代取快递">代取快递</option>
+                                <option value="代买">代买</option>
+                                <option value="代送">代送</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="status">
+                                <option value="">全部状态</option>
+                                <option value="0">待接取</option>
+                                <option value="1">进行中</option>
+                                <option value="2">已完成</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-primary w-100" onclick="searchTasks()">搜索</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 任务列表 -->
+            <div id="taskList"></div>
+
+            <!-- 分页 -->
+            <nav id="pagination"></nav>
+        </div>
+    </main>
+    </main>
+
+    <!-- 登录模态框 -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">用户登录</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label class="form-label">用户名</label>
+                            <input type="text" class="form-control" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">密码</label>
+                            <input type="password" class="form-control" name="password" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="login()">登录</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 注册模态框 -->
+    <div class="modal fade" id="registerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">用户注册</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="registerForm">
+                        <div class="text-center mb-3">
+                            <img id="registerAvatarPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23ddd'/%3E%3Ctext x='50' y='65' text-anchor='middle' font-size='40' fill='%23999'%3E👤%3C/text%3E%3C/svg%3E" class="rounded-circle avatar-preview" alt="头像">
+                            <div class="mt-2">
+                                <input type="file" id="registerAvatarUpload" accept="image/*" class="d-none" onchange="previewRegisterAvatar(this)">
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="$('#registerAvatarUpload').click()">上传头像</button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">用户名 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="username" required placeholder="请输入用户名">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">密码 <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" name="password" required minlength="6" placeholder="至少6位字符">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">昵称 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="nickname" required placeholder="请输入昵称">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">邮箱</label>
+                            <input type="email" class="form-control" name="email" placeholder="example@email.com">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">手机</label>
+                            <input type="tel" class="form-control" name="phone" placeholder="请输入11位手机号" pattern="^1[3-9]\d{9}$" maxlength="11">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="register()">注册</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 发布任务模态框 -->
+    <div class="modal fade" id="publishModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">发布任务</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="publishForm">
+                        <div class="mb-3">
+                            <label class="form-label">任务标题</label>
+                            <input type="text" class="form-control" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">任务描述</label>
+                            <textarea class="form-control" name="description" rows="3" required></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">分类</label>
+                                <select class="form-select" name="category" required>
+                                    <option value="代取快递">代取快递</option>
+                                    <option value="代买">代买</option>
+                                    <option value="代送">代送</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">酬金（元）</label>
+                                <input type="number" class="form-control" name="reward" step="0.5" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">地点</label>
+                            <input type="text" class="form-control" name="location" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">截止时间</label>
+                            <input type="datetime-local" class="form-control" name="deadline" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">任务图片</label>
+                            <input type="file" class="form-control" id="taskImage" accept="image/*">
+                            <div id="imagePreview" class="mt-2"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="publishTask()">发布</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 统计模态框 -->
+    <div class="modal fade" id="statisticsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">数据统计</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="statisticsContent">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 我的任务模态框 -->
+    <div class="modal fade" id="myTasksModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">我的任务</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs mb-3" id="taskTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="published-tab" data-bs-toggle="tab" data-bs-target="#published" type="button" role="tab">我发布的</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="received-tab" data-bs-toggle="tab" data-bs-target="#received" type="button" role="tab">我接取的</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="taskTabsContent">
+                        <div class="tab-pane fade show active" id="published" role="tabpanel">
+                            <div id="publishedTasks"></div>
+                        </div>
+                        <div class="tab-pane fade" id="received" role="tabpanel">
+                            <div id="receivedTasks"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 个人中心模态框 -->
+    <div class="modal fade" id="profileModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">个人中心</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="profileForm">
+                        <div class="text-center mb-3">
+                            <img id="avatarPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23ddd'/%3E%3Ctext x='50' y='65' text-anchor='middle' font-size='40' fill='%23999'%3E👤%3C/text%3E%3C/svg%3E" class="rounded-circle avatar-preview" alt="头像">
+                            <div class="mt-2">
+                                <input type="file" id="avatarUpload" accept="image/*" class="d-none" onchange="previewAvatar(this)">
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="$('#avatarUpload').click()">更换头像</button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">用户名</label>
+                            <input type="text" class="form-control" id="profileUsername" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">昵称</label>
+                            <input type="text" class="form-control" id="profileNickname">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">邮箱</label>
+                            <input type="email" class="form-control" id="profileEmail" placeholder="example@email.com">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">手机号</label>
+                            <input type="tel" class="form-control" id="profilePhone" placeholder="请输入11位手机号" pattern="^1[3-9]\d{9}$" maxlength="11">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="updateProfile()">保存修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 帮助中心模态框 -->
+    <div class="modal fade" id="helpModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">帮助中心</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6><i class="fas fa-info-circle"></i> 使用说明</h6>
+                    <ol>
+                        <li><strong>注册/登录</strong>：点击右上角注册新账号或登录已有账号</li>
+                        <li><strong>发布任务</strong>：登录后点击"发布任务"，填写任务信息并上传图片</li>
+                        <li><strong>搜索任务</strong>：使用搜索栏按关键词、分类、状态筛选任务</li>
+                        <li><strong>接取任务</strong>：浏览任务列表，点击"接取任务"按钮</li>
+                        <li><strong>完成任务</strong>：接取任务后可以点击"完成任务"标记为完成</li>
+                        <li><strong>我的任务</strong>：查看我发布的任务和接取的任务</li>
+                        <li><strong>个人中心</strong>：修改个人信息、更换头像</li>
+                    </ol>
+                    <hr>
+                    <h6><i class="fas fa-question-circle"></i> 常见问题</h6>
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    如何发布任务？
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    登录后，点击导航栏右上角的"发布任务"按钮，填写任务标题、描述、分类、酬金、地点和截止时间，可选择上传任务图片，然后点击"发布"即可。
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    如何接取任务？
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    在任务列表中，找到状态为"待接取"的任务，点击"接取任务"按钮即可。每个任务只能被一个用户接取。
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    可以取消任务吗？
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    只有管理员可以删除任务。普通用户可以联系管理员处理。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light mt-5 py-4">
+        <div class="container">
+            <div class="text-center">
+                <p class="mb-0">
+                    <a href="http://www.nchu.edu.cn" target="_blank" class="text-decoration-none">
+                        <i class="fas fa-link"></i> 联系我们
+                    </a>
+                </p>
+                <p class="text-muted small mb-0 mt-2">© 23224220 校园跑腿系统</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
+
